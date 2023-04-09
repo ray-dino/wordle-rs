@@ -39,6 +39,12 @@ pub mod game {
         turns: u8
     }
 
+    pub enum TurnResult {
+        Right,
+        Wrong([u8;5]),
+        Invalid(String)
+    }
+
     impl Game {
         pub fn new(secret_word: String) -> Self {
             dbg!(&secret_word);
@@ -48,14 +54,15 @@ pub mod game {
             }
         }
 
-        pub fn take_a_guess(&self, guess: String) -> Result<String, String>  {
+        pub fn take_a_guess(&self, guess: String) -> TurnResult  {
             dbg!(&guess);
-            // validate guess
-            if Game::validate_guess(&guess) {
-                println!("Ok!");
-                return Ok(String::from("Ok"))
+            if !Game::validate_guess(&guess) {
+                // return Err(String::from("Message"));
+                return TurnResult::Invalid(String::from("Message"));
             }
-            Err(String::from("Message"))
+            // check guess against secret word
+            self.compare_guess(&guess)
+            // TurnResult::Right
         }
 
         pub fn get_turns(&self) -> u8 {
@@ -66,7 +73,14 @@ pub mod game {
             guess.trim().chars().all(|c|c.is_ascii_lowercase()) 
             && guess.trim().len() == 5
         }
-        
+
+        fn compare_guess(&self, guess: &String) -> TurnResult {
+            if self.secret_word.eq(guess.trim()) {
+                return TurnResult::Right;
+            }
+            return TurnResult::Wrong([0, 0, 0, 0, 0])
+        }
+
     }
 }
 
