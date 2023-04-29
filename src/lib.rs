@@ -57,18 +57,20 @@ pub mod game {
         pub fn take_a_guess(&self, guess: String) -> TurnResult  {
             dbg!(&guess);
             if !Game::validate_guess(&guess) {
-                // return Err(String::from("Message"));
-                return TurnResult::Invalid(String::from("Message"));
+                return TurnResult::Invalid(String::from("Your guess is not valid."));
             }
             // check guess against secret word
             self.compare_guess(&guess)
-            // TurnResult::Right
         }
 
         pub fn get_turns(&self) -> u8 {
             self.turns
         }
 
+        // Make this return an enum for the different kinds of invalid guesses
+        // Not all characters
+        // Too short
+        // Not a word
         fn validate_guess(guess: &String) -> bool {
             guess.trim().chars().all(|c|c.is_ascii_lowercase()) 
             && guess.trim().len() == 5
