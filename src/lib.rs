@@ -56,11 +56,6 @@ pub mod game {
 
         pub fn take_a_guess(&self, guess: String) -> TurnResult  {
             dbg!(&guess);
-            // if !Game::validate_guess(&guess) {
-            //     return TurnResult::Invalid(String::from("Your guess is not valid."));
-            // }
-            // // check guess against secret word
-            // self.compare_guess(&guess)
             let guess_error = Self::validate_guess(&guess);
             if let Some(error_message) = guess_error {
                 return TurnResult::Invalid(error_message);
