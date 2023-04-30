@@ -56,24 +56,37 @@ pub mod game {
 
         pub fn take_a_guess(&self, guess: String) -> TurnResult  {
             dbg!(&guess);
-            if !Game::validate_guess(&guess) {
-                return TurnResult::Invalid(String::from("Your guess is not valid."));
+            // if !Game::validate_guess(&guess) {
+            //     return TurnResult::Invalid(String::from("Your guess is not valid."));
+            // }
+            // // check guess against secret word
+            // self.compare_guess(&guess)
+            let guess_error = Self::validate_guess(&guess);
+            if let Some(error_message) = guess_error {
+                return TurnResult::Invalid(error_message);
+            } else {
+                return self.compare_guess(&guess);
             }
-            // check guess against secret word
-            self.compare_guess(&guess)
         }
 
         pub fn get_turns(&self) -> u8 {
             self.turns
         }
 
-        // Make this return an enum for the different kinds of invalid guesses
-        // Not all characters
-        // Too short
-        // Not a word
-        fn validate_guess(guess: &String) -> bool {
-            guess.trim().chars().all(|c|c.is_ascii_lowercase()) 
-            && guess.trim().len() == 5
+        fn validate_guess(guess: &String) -> Option<String> {
+            if !guess.trim().chars().all(|c|c.is_ascii_lowercase()) {
+                return Some(String::from("Guess must be all characters."));
+            } else if guess.trim().len() != 5 {
+                return Some(String::from("Guess must be 5 letters long."));
+            } else if !Self::is_real_word(&guess) {
+                return Some(String::from("Guess is not a real word."));
+            } else {
+                return None;
+            }
+        }
+
+        fn is_real_word(guess: &String) -> bool {
+            true
         }
 
         fn compare_guess(&self, guess: &String) -> TurnResult {
