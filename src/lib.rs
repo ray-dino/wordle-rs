@@ -103,7 +103,11 @@ pub mod game {
                 } else {
                     let letter_found = self.secret_word.chars().position(|c| c == guess_letter);
                     if let Some(position) = letter_found {
-                        result.push(LetterResult::WrongPlace);
+                        if guess_chars[position] == guess_letter {
+                            result.push(LetterResult::NotInWord);
+                        } else {
+                            result.push(LetterResult::WrongPlace);
+                        }
                     } else {
                         result.push(LetterResult::NotInWord);
                     }
