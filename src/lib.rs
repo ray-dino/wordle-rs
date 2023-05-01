@@ -5,8 +5,6 @@ pub mod setup {
     use std::io::{BufRead, BufReader};
     use std::path::Path;
 
-
-
     pub fn generate_secret_word() -> String {
         const WORDS_PATH : &str = "data/words.txt";
         let project_root = get_project_root().expect("Can't find project root.");
@@ -26,22 +24,29 @@ pub mod setup {
             .map(|l| l.expect("Could not parse line"))
             .collect()
     }
-
-
-
 }
 
 pub mod game {
-    const TURNS: u8 = 5;
+    // use std::collections::btree_set::SymmetricDifference;
+
+    const TURNS: u8 = 6;
 
     pub struct Game {
         secret_word: String,
         turns: u8
     }
 
+    #[derive(Debug)]
+    pub enum LetterResult {
+        Right,
+        WrongPlace,
+        NotInWord
+    }
+
+    #[derive(Debug)]
     pub enum TurnResult {
         Right,
-        Wrong([u8;5]),
+        Wrong(Vec<LetterResult>),
         Invalid(String)
     }
 
@@ -85,10 +90,26 @@ pub mod game {
         }
 
         fn compare_guess(&self, guess: &String) -> TurnResult {
-            if self.secret_word.eq(guess.trim()) {
+            let guess = guess.trim();
+            if self.secret_word.eq(guess) {
                 return TurnResult::Right;
             }
-            return TurnResult::Wrong([0, 0, 0, 0, 0])
+            let mut result: Vec<LetterResult> = Vec::new();
+            let secret_word_chars: Vec<char> = self.secret_word.chars().collect();
+            let guess_chars: Vec<char> = guess.chars().collect();
+            for (guess_index, guess_letter) in guess.chars().enumerate() {
+                if guess_letter == secret_word_chars[guess_index] {
+                    result.push(LetterResult::Right);
+                } else {
+                    let letter_found = self.secret_word.chars().position(|c| c == guess_letter);
+                    if let Some(position) = letter_found {
+                        result.push(LetterResult::WrongPlace);
+                    } else {
+                        result.push(LetterResult::NotInWord);
+                    }
+                }
+            }
+            return TurnResult::Wrong(result)
         }
 
     }
