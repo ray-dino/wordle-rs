@@ -1,6 +1,6 @@
 
 
-use wordle::setup::generate_secret_word;
+use wordle::setup::get_words_list;
 use wordle::game::{Game, TurnResult};
 use wordle::interface::input_guess;
 
@@ -9,11 +9,12 @@ fn main() {
 }
 
 fn run() {
-    let game = Game::new(generate_secret_word());
+    let game = Game::new(get_words_list());
     for _turn in 0..game.get_turns() {
         match game.take_a_guess(input_guess().expect("Invalid guess")) {
             TurnResult::Right => {
                 println!("You won!");
+                break;
             }
             TurnResult::Wrong(pattern) => {
                 println!("Mistakes: {:?}", pattern);

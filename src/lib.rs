@@ -1,19 +1,15 @@
 pub mod setup {
     use project_root::get_project_root;
-    use rand::Rng;
     use std::fs::File;
     use std::io::{BufRead, BufReader};
     use std::path::Path;
 
-    pub fn generate_secret_word() -> String {
+    pub fn get_words_list() -> Vec<String> {
         const WORDS_PATH : &str = "data/words.txt";
         let project_root = get_project_root().expect("Can't find project root.");
         let words_file = project_root.join(WORDS_PATH);
 
-        let lines = read_lines(words_file);
-
-        let word_index = rand::thread_rng().gen_range(0..lines.len());
-        lines[word_index].clone()
+        read_lines(words_file)
     }
 
     fn read_lines(filename: impl AsRef<Path>) -> Vec<String> {
@@ -27,12 +23,13 @@ pub mod setup {
 }
 
 pub mod game {
-    // use std::collections::btree_set::SymmetricDifference;
+    use rand::Rng;
 
     const TURNS: u8 = 6;
 
     pub struct Game {
         secret_word: String,
+        words_list: Vec<String>,
         turns: u8
     }
 
@@ -51,17 +48,24 @@ pub mod game {
     }
 
     impl Game {
-        pub fn new(secret_word: String) -> Self {
-            dbg!(&secret_word);
+
+        pub fn new(words_list: Vec<String>) -> Self {
             Self {
-                secret_word: secret_word,
+                secret_word: Self::generate_secret_word(&words_list),
+                words_list: words_list,
                 turns: TURNS
             }
         }
 
+        fn generate_secret_word(words_list: &Vec<String>) -> String {
+            let word_index = rand::thread_rng().gen_range(0..words_list.len());
+            dbg!(&words_list[word_index]);
+            words_list[word_index].clone()
+        }
+
         pub fn take_a_guess(&self, guess: String) -> TurnResult  {
             dbg!(&guess);
-            let guess_error = Self::validate_guess(&guess);
+            let guess_error = self.validate_guess(&guess);
             if let Some(error_message) = guess_error {
                 return TurnResult::Invalid(error_message);
             } else {
@@ -73,20 +77,25 @@ pub mod game {
             self.turns
         }
 
-        fn validate_guess(guess: &String) -> Option<String> {
+        fn validate_guess(&self, guess: &String) -> Option<String> {
             if !guess.trim().chars().all(|c|c.is_ascii_lowercase()) {
                 return Some(String::from("Guess must be all characters."));
             } else if guess.trim().len() != 5 {
                 return Some(String::from("Guess must be 5 letters long."));
-            } else if !Self::is_real_word(&guess) {
+            } else if !self.is_real_word(&guess) {
                 return Some(String::from("Guess is not a real word."));
             } else {
                 return None;
             }
         }
 
-        fn is_real_word(guess: &String) -> bool {
-            true
+        fn is_real_word(&self, guess: &String) -> bool {
+            let found_in_word_list = self.words_list.iter().find(|&x| x == guess.trim());
+            if let Some(_found_word) = found_in_word_list {
+                return true
+            } else {
+                return false
+            }
         }
 
         fn compare_guess(&self, guess: &String) -> TurnResult {
